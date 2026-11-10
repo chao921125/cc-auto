@@ -42,6 +42,9 @@ interface ScriptScope {
     fun defineObject(name: String, builder: ScriptObjectBuilder.() -> Unit)
     fun defineProperty(name: String, value: Any?)
     fun get(name: String): Any?
+
+    /** 向已存在的命名空间对象动态绑定成员（如 ui.layout 后的 id 绑定）。 */
+    fun bindMember(objectName: String, memberName: String, value: Any?)
 }
 
 /**

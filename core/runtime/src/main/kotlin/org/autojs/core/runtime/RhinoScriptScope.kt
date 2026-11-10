@@ -38,6 +38,12 @@ class RhinoScriptScope(
         return target.get(name, target)
     }
 
+    override fun bindMember(objectName: String, memberName: String, value: Any?) {
+        val obj = target.get(objectName, target) as? ScriptableObject ?: return
+        val jsValue = Context.javaToJS(value, obj)
+        ScriptableObject.defineProperty(obj, memberName, jsValue, ScriptableObject.EMPTY)
+    }
+
     private fun installBuilderMembers(obj: ScriptableObject, members: Map<String, Any?>) {
         for ((key, value) in members) {
             when (value) {

@@ -42,6 +42,11 @@ class EngineManager(private val context: Context) {
             register(AppApiProvider(context))
             register(ShellApiProvider())
             register(FloatyApiProvider(context))
+            register(org.autojs.core.runtime.api.ThreadsApiProvider())
+            register(org.autojs.core.runtime.api.EnginesApiProvider())
+            register(org.autojs.core.runtime.api.EventsApiProvider())
+            register(org.autojs.core.runtime.api.DialogsApiProvider())
+            register(org.autojs.core.runtime.api.UiApiProvider())
         }
     }
 

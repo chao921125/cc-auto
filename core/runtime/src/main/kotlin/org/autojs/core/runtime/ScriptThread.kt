@@ -17,6 +17,11 @@ class ScriptThread(
     @Volatile
     var returnValue: Any? = null
 
+    /** 若设置，则本线程执行该 JS 函数（用于 threads.start），而非执行 source 代码。 */
+    @Volatile
+    var entryFunction: org.mozilla.javascript.Function? = null
+    var entryArgs: Array<Any?> = emptyArray()
+
     private val finished = CountDownLatch(1)
     private val eventLoop = EventLoop(this)
     private var cx: Context? = null
@@ -25,7 +30,14 @@ class ScriptThread(
     val moduleLoader get() = runtime.moduleLoader
     val eventBus get() = runtime.eventBus
 
+    init {
+        setUncaughtExceptionHandler { th, ex ->
+            runtime.log("E", "线程未捕获异常 ${th.name}: ${ex.message}")
+        }
+    }
+
     override fun run() {
+        currentRuntime.set(runtime)
         try {
             cx = RhinoEngine.enterContext(runtime.config)
             val scope = cx!!.initStandardObjects()
@@ -40,22 +52,30 @@ class ScriptThread(
             installBuiltins(cx!!, scope)
 
             // 执行脚本
-            val code = source.getCode()
-            val result = cx!!.evaluateString(scope, code, source.name, 1, null)
+            val ef = entryFunction
+            val result = if (ef != null) {
+                ef.call(cx!!, scope, scope, entryArgs)
+            } else {
+                val code = source.getCode()
+                cx!!.evaluateString(scope, code, source.name, 1, null)
+            }
             returnValue = result
 
             // 运行事件循环直到所有 timer/子线程结束
-            eventLoop.runLoop()
+            if (ef == null) eventLoop.runLoop()
         } catch (e: org.mozilla.javascript.RhinoException) {
             runtime.log("E", "${e.message} (line ${e.lineNumber()})")
-            if (isMain) throw ScriptException("RHINO_ERROR", e.message ?: "JS error", e.lineNumber(), cause = e)
+            // 不再重抛：避免未捕获异常崩溃进程，错误已通过日志暴露
         } catch (e: InterruptedException) {
             interrupt()
         } catch (e: ScriptInterrupt) {
-            if (isMain) throw e
+            runtime.log("I", "脚本已被中断: ${source.name}")
+        } catch (e: Throwable) {
+            runtime.log("E", "脚本线程异常: ${e.javaClass.simpleName}: ${e.message}")
         } finally {
             eventLoop.shutdown()
             Context.exit()
+            currentRuntime.remove()
             runtime.removeThread(this)
             finished.countDown()
         }
@@ -72,14 +92,11 @@ class ScriptThread(
 
     private fun installProvider(cx: Context, scope: ScriptableObject, provider: ApiProvider) {
         try {
-            val jsObj = cx.newObject(scope) as ScriptableObject
-            val builder = ScriptObjectBuilder()
-            // 通过反射调用 provider 的 install 方法
-            // 这里简化处理：直接创建 JS 对象并注入
+            // 直接把命名空间（defineObject）与顶层简写（defineFunction）注入全局作用域，
+            // 避免 http.http.get / auto.auto.text 之类的双层嵌套。
             val installMethod = provider.javaClass.getMethod("install", ScriptScope::class.java)
-            val scriptScope = RhinoScriptScope(cx, scope, jsObj)
+            val scriptScope = RhinoScriptScope(cx, scope, scope)
             installMethod.invoke(provider, scriptScope)
-            ScriptableObject.defineProperty(scope, provider.name, jsObj, ScriptableObject.READONLY)
         } catch (e: Exception) {
             runtime.log("W", "Failed to install API '${provider.name}': ${e.message}")
         }
@@ -234,5 +251,13 @@ class ScriptThread(
         val c = cx ?: return null
         val s = scope ?: return null
         return c.evaluateString(s, code, scriptName, 1, null)
+    }
+
+    companion object {
+        /** 当前正在执行脚本的 runtime（供 threads/engines 内置 API 读取）。 */
+        val currentRuntime = ThreadLocal<ScriptRuntime>()
+
+        /** 当前脚本线程（供 threads.currentThread 读取）。 */
+        fun current(): ScriptThread? = currentThread() as? ScriptThread
     }
 }

@@ -102,5 +102,51 @@ class AutoApiProvider : ApiProvider {
             }
             property("version", 1)
         }
+
+        // 顶层简写：对齐 AutoJS Pro，可直接 text()/id()/click()/swipe()/waitFor() 调用
+        fun sel(name: String, build: (String) -> UiSelector) =
+            scope.defineFunction(name) { args ->
+                val s = build(args[0]?.toString() ?: "")
+                engine?.let { UiQuery(it, s) }
+            }
+        sel("text") { UiSelector().text(it) }
+        sel("textContains") { UiSelector().textContains(it) }
+        sel("textStartsWith") { UiSelector().textStartsWith(it) }
+        sel("id") { UiSelector().id(it) }
+        sel("idContains") { UiSelector().idContains(it) }
+        sel("desc") { UiSelector().desc(it) }
+        sel("descContains") { UiSelector().descContains(it) }
+        sel("clazz") { UiSelector().clazz(it) }
+        sel("className") { UiSelector().clazz(it) }
+
+        scope.defineFunction("click") { args ->
+            val x = (args.getOrNull(0) as? Number)?.toFloat() ?: 0f
+            val y = (args.getOrNull(1) as? Number)?.toFloat() ?: 0f
+            engine?.gestureClick(x, y) ?: false
+        }
+        scope.defineFunction("longClick") { args ->
+            val x = (args.getOrNull(0) as? Number)?.toFloat() ?: 0f
+            val y = (args.getOrNull(1) as? Number)?.toFloat() ?: 0f
+            engine?.gestureLongClick(x, y) ?: false
+        }
+        scope.defineFunction("swipe") { args ->
+            val x1 = (args.getOrNull(0) as? Number)?.toFloat() ?: 0f
+            val y1 = (args.getOrNull(1) as? Number)?.toFloat() ?: 0f
+            val x2 = (args.getOrNull(2) as? Number)?.toFloat() ?: 0f
+            val y2 = (args.getOrNull(3) as? Number)?.toFloat() ?: 0f
+            val dur = (args.getOrNull(4) as? Number)?.toLong() ?: 300L
+            engine?.gestureSwipe(x1, y1, x2, y2, dur) ?: false
+        }
+        scope.defineFunction("waitFor") { args ->
+            val timeout = (args.getOrNull(0) as? Number)?.toLong() ?: 5000L
+            val deadline = System.currentTimeMillis() + timeout
+            while (System.currentTimeMillis() < deadline) {
+                if (AutoJsAccessibilityService.isRunning()) return@defineFunction true
+                Thread.sleep(200)
+            }
+            false
+        }
+        scope.defineFunction("scrollDown") { _ -> engine?.gestureSwipe(0f, 0f, 0f, 0f, 300) ?: false }
+        scope.defineFunction("scrollUp") { _ -> engine?.gestureSwipe(0f, 0f, 0f, 0f, 300) ?: false }
     }
 }

@@ -101,6 +101,32 @@ let console = floaty.console()
 
 ---
 
+## ui — 脚本 UI
+
+以 `"ui";` 开头或调用 `ui.layout(xml)` 进入脚本 UI 模式（全屏 Activity 渲染）：
+
+```javascript
+"ui";
+ui.layout('<vertical padding="16">' +
+    '<text id="status" text="就绪"/>' +
+    '<button id="btnGo" text="开始"/></vertical>');
+
+// XML 中带 id 的控件自动绑定为 ui.<id>
+ui.btnGo.on("click", function () {
+    ui.status.setText("运行中...");
+});
+// 常用方法：setText/text、setProgress/getProgress/setMax、
+// setVisibility、setChecked、on("click"/"check", fn)、click(fn)
+ui.run(function () { /* 在主线程执行并返回结果 */ });
+ui.finish();   // 关闭脚本 UI
+```
+
+> 支持标签：vertical/horizontal/linear/frame/relative/text/button/input/img/checkbox/switch/scroll/list/progressbar/seekbar/spinner/radiogroup；
+> 常用属性：id/text/hint/w/h/padding/margin*/layout_weight/bg/textColor/textSize/gravity/max/progress/checked。
+> 注意：Rhino 模板字符串不支持多行，XML 请用字符串拼接书写。
+
+---
+
 ## http — 网络请求
 
 ```javascript
@@ -175,9 +201,26 @@ shell.isRootAvailable()
 ## threads — 多线程
 
 ```javascript
-let t = threads.start(function() { /* ... */ })
-threads.dispose(t)
+let t = threads.start(function () { /* 子线程逻辑 */ })
+t.interrupt()          // 中断子线程
+t.join()               // 等待子线程
+t.isAlive()
+threads.shutDownAll()  // 停止本脚本创建的所有子线程
 threads.currentThread()
+threads.currentThreadName()
+```
+
+---
+
+## engines — 引擎管理
+
+```javascript
+engines.myScript()            // 当前脚本名
+engines.myId()                // 当前引擎 id
+engines.myEngine()            // 当前引擎对象
+engines.runningScriptCount()  // 运行中脚本数
+engines.all()                 // 运行中脚本名列表
+engines.stopAllScripts()      // 停止全部脚本
 ```
 
 ---
@@ -185,10 +228,42 @@ threads.currentThread()
 ## events — 事件总线
 
 ```javascript
+// 全局事件总线
 events.on("event", handler)
 events.once("event", handler)
 events.emit("event", data)
-events.off("event", handler)
+events.removeAllListeners("event")
+
+// 独立发射器
+var e = events.emitter()
+e.on("x", fn); e.emit("x", 1); e.off("x")
+```
+
+> 键盘/触摸等系统级事件监听需 root 或无障碍注入，属后续增强。
+
+---
+
+## dialogs — 对话框
+
+```javascript
+dialogs.alert(title, content[, callback])
+var ok = dialogs.confirm(title, content)          // 返回 Boolean
+var s  = dialogs.rawInput(title[, hint])          // 返回 String / null
+var i  = dialogs.singleChoice(title, [items])     // 返回索引 / -1
+```
+
+> UI 在主线程显示；无回调参数时为阻塞式（挂起当前脚本线程直到用户操作）。
+
+---
+
+## 顶层简写（对齐 AutoJS Pro）
+
+选择器与常用动作可直接顶层调用，无需 `auto.` 前缀：
+
+```javascript
+text("登录") / textContains(...) / id(...) / desc(...) / clazz(...) / className(...)
+click(x, y) / longClick(x, y) / swipe(x1,y1,x2,y2,dur)
+waitFor() / scrollDown() / scrollUp()
 ```
 
 ---
@@ -196,10 +271,17 @@ events.off("event", handler)
 ## 全局函数
 
 ```javascript
-log(msg)           // 打印日志
+log(msg)           // 打印日志（同时输出到 logcat，tag=CcAuto）
+toast(msg)         // 弹出提示
 sleep(ms)          // 休眠
+exit()             // 结束当前脚本
+random()           // [0,1) 随机小数
+random(min, max)   // [min,max] 随机整数
 require("module")  // 加载模块
-setTimeout(fn, ms) // 定时器
-setInterval(fn, ms)// 循环定时器
-clearTimeout(id)   // 清除定时器
+setTimeout(fn, ms) / setInterval(fn, ms)
+clearTimeout(id)   / clearInterval(id)
+console.log/info/warn/error/verbose/debug/show/hide/clear
+base64.encode(str|bytes) / base64.decode(str)
+crypto.md5(str) / crypto.sha1(str) / crypto.sha256(str)
+util.format(fmt, ...) / util.uuid()
 ```

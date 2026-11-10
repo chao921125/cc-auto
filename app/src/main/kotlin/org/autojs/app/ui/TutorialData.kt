@@ -133,6 +133,17 @@ object TutorialData {
                 "console.show() 可显示脚本控制台（若已实现悬浮控制台）。",
             "floaty_demo.js"
         ),
+        TutorialTopic(
+            "界面", "脚本 UI", "ui.layout + id 绑定 + 事件",
+            "以 \"ui\"; 开头进入脚本 UI 模式，ui.layout(xml) 全屏渲染原生界面：\n\n" +
+                "XML 中 id=\"btnRun\" 的控件自动绑定为 ui.btnRun\n" +
+                "ui.btnRun.on(\"click\") { ... }  事件回调（主线程执行）\n" +
+                "ui.status.setText(\"...\") / ui.progress.setProgress(30)\n" +
+                "ui.run(fn) 在主线程执行并取返回值；ui.finish() 关闭界面\n\n" +
+                "支持 vertical/horizontal/text/button/input/progressbar/switch 等常用标签。\n" +
+                "注意 Rhino 多行模板字符串不可用，XML 用字符串拼接书写。",
+            "ui_demo.js"
+        ),
 
         // ===== 网络 =====
         TutorialTopic(
@@ -249,6 +260,62 @@ object TutorialData {
                 "clearTimeout(id) / clearInterval(id)\n\n" +
                 "脚本主逻辑结束后，事件循环会维持到无定时器/子任务。",
             "timer_demo.js"
+        ),
+
+        // ===== 多线程与引擎 =====
+        TutorialTopic(
+            "多线程与引擎", "多线程 threads", "threads.start / shutDownAll",
+            "每个脚本线程自带 Rhino 上下文：\n\n" +
+                "var t = threads.start(function(){ ... });\n" +
+                "t.interrupt() / t.join() / t.isAlive()\n" +
+                "threads.shutDownAll()  停止本脚本创建的子线程\n" +
+                "threads.currentThreadName()\n\n" +
+                "子线程共享脚本作用域变量，注意并发。",
+            "threads_demo.js"
+        ),
+        TutorialTopic(
+            "多线程与引擎", "脚本引擎 engines", "myEngine / stopAllScripts",
+            "查询与运行控制：\n\n" +
+                "engines.myScript()      当前脚本名\n" +
+                "engines.myId()          当前引擎 id\n" +
+                "engines.myEngine()      当前引擎对象\n" +
+                "engines.runningScriptCount() / engines.all()\n" +
+                "engines.stopAllScripts()  停止全部脚本",
+            "engines_demo.js"
+        ),
+
+        // ===== 事件与对话框 =====
+        TutorialTopic(
+            "事件与对话框", "事件总线 events", "events.on / emit / emitter",
+            "全局事件总线：\n\n" +
+                "events.on(\"evt\", data => log(data))\n" +
+                "events.once(evt, fn) / events.removeAllListeners(evt)\n" +
+                "events.emit(\"evt\", payload)\n\n" +
+                "独立发射器：\n" +
+                "var e = events.emitter(); e.on(\"x\", fn); e.emit(\"x\", 1)\n\n" +
+                "注：键盘/触摸等系统级事件监听需 root/无障碍注入，属后续增强。",
+            "events_demo.js"
+        ),
+        TutorialTopic(
+            "事件与对话框", "对话框 dialogs", "alert / confirm / rawInput / singleChoice",
+            "脚本中弹出系统对话框（UI 在主线程执行）：\n\n" +
+                "dialogs.alert(title, content[, callback])\n" +
+                "var ok = dialogs.confirm(title, content)      返回 Boolean\n" +
+                "var s  = dialogs.rawInput(title[, hint])      返回 String/null\n" +
+                "var i  = dialogs.singleChoice(title, [..])    返回索引/-1\n\n" +
+                "阻塞式调用会挂起当前脚本线程直到用户操作；回调式不阻塞。",
+            "dialogs_demo.js"
+        ),
+
+        // ===== 顶层简写 =====
+        TutorialTopic(
+            "UI 自动化", "顶层简写", "text()/id()/click()/swipe() 直接调用",
+            "对齐 AutoJS Pro：选择器与常用动作可直接顶层调用，无需 auto. 前缀：\n\n" +
+                "text(\"登录\") / textContains / id / desc / clazz / className\n" +
+                "click(x,y) / longClick(x,y) / swipe(...) / waitFor()\n" +
+                "scrollDown() / scrollUp()\n\n" +
+                "返回值同样是 UiQuery，可 findOne/find/click/setText 链式操作。",
+            "selectors_demo.js"
         )
     )
 

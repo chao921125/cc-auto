@@ -31,6 +31,7 @@ class ScriptRuntime(
 
     fun run(): ExecutionResult {
         startTime = System.currentTimeMillis()
+        RuntimeRegistry.add(this)
         onEvent?.invoke(ScriptEvent.START)
         try {
             val thread = ScriptThread(this, source, isMain = true)
@@ -68,6 +69,12 @@ class ScriptRuntime(
 
     fun isAlive(): Boolean = alive.get()
 
+    /** 中断本脚本创建的所有子线程（threads.shutDownAll）。 */
+    fun shutDownThreads() {
+        val cur = Thread.currentThread()
+        synchronized(threads) { threads.filter { it !== cur }.forEach { it.interrupt() } }
+    }
+
     /** 运行起始时间戳（未开始时为 0）。 */
     fun startedAt(): Long = startTime
 
@@ -94,6 +101,7 @@ class ScriptRuntime(
 
     private fun cleanup() {
         alive.set(false)
+        RuntimeRegistry.remove(this)
         synchronized(threads) {
             threads.forEach { it.interrupt() }
             threads.clear()
