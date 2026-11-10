@@ -35,6 +35,6 @@
         <Preference
             android:key="about"
             android:title="@string/settings_about"
-            android:summary="AutoJs Pro v1.0.0" />
+            android:summary="CcAuto v1.0.0" />
     </PreferenceCategory>
 </PreferenceScreen>

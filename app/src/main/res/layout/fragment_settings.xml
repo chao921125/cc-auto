@@ -1,11 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/settings_container"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-</FrameLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="权限与功能"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#3F51B5"
+            android:paddingBottom="8dp" />
+
+        <LinearLayout
+            android:id="@+id/item_accessibility"
+            style="@style/SettingsRow">
+            <TextView style="@style/SettingsRowTitle" android:text="@string/settings_accessibility" />
+            <TextView style="@style/SettingsRowSummary" android:text="@string/settings_accessibility_summary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/item_overlay"
+            style="@style/SettingsRow">
+            <TextView style="@style/SettingsRowTitle" android:text="@string/settings_overlay" />
+            <TextView style="@style/SettingsRowSummary" android:text="@string/settings_overlay_summary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/item_storage"
+            style="@style/SettingsRow">
+            <TextView style="@style/SettingsRowTitle" android:text="存储权限" />
+            <TextView
+                android:id="@+id/item_storage_summary"
+                style="@style/SettingsRowSummary"
+                android:text="允许读写 /sdcard/CcAuto 工作目录" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/item_keep_alive"
+            style="@style/SettingsRow">
+            <TextView style="@style/SettingsRowTitle" android:text="@string/settings_keep_alive" />
+            <TextView style="@style/SettingsRowSummary" android:text="@string/settings_keep_alive_summary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/item_about"
+            style="@style/SettingsRow">
+            <TextView style="@style/SettingsRowTitle" android:text="@string/settings_about" />
+            <TextView style="@style/SettingsRowSummary" android:text="CcAuto v1.0.0" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

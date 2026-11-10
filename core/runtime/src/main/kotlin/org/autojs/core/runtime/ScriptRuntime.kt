@@ -68,6 +68,9 @@ class ScriptRuntime(
 
     fun isAlive(): Boolean = alive.get()
 
+    /** 运行起始时间戳（未开始时为 0）。 */
+    fun startedAt(): Long = startTime
+
     fun addThread(thread: ScriptThread) {
         synchronized(threads) { threads.add(thread) }
     }
@@ -80,6 +83,12 @@ class ScriptRuntime(
     }
 
     fun log(level: String, msg: String) {
+        // 同时输出到 logcat（便于调试与 adb logcat 取证）
+        when (level) {
+            "E" -> android.util.Log.e("CcAuto", msg)
+            "W" -> android.util.Log.w("CcAuto", msg)
+            else -> android.util.Log.i("CcAuto", msg)
+        }
         onLog?.invoke(level, msg)
     }
 

@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -57,6 +58,11 @@
         <activity
             android:name=".ui.TaskSchedulerActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.TutorialActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AutoJs.NoActionBar" />
 
         <service
             android:name=".engine.EngineService"

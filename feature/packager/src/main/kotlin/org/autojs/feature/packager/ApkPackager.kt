@@ -14,7 +14,7 @@ class ApkPackager {
     data class PackageConfig(
         val mainScript: String,
         val packageName: String = "org.autojs.packaged",
-        val appName: String = "AutoJs App",
+        val appName: String = "CcAuto App",
         val versionName: String = "1.0.0",
         val versionCode: Int = 1,
         val iconPath: String? = null,

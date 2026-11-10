@@ -25,6 +25,7 @@ class EngineManager(private val context: Context) {
     private val runtimes = ConcurrentHashMap<String, ScriptRuntime>()
 
     init {
+        org.autojs.core.runtime.AppRuntime.context = context
         registerApis()
     }
 
@@ -66,10 +67,21 @@ class EngineManager(private val context: Context) {
     private fun executeSource(source: ScriptSource, config: RuntimeConfig): String {
         val runtime = ScriptRuntime(source, config.copy(scriptDir = context.filesDir.absolutePath + "/scripts"))
         runtimes[runtime.id] = runtime
-        Thread {
-            runtime.run()
-            runtimes.remove(runtime.id)
-        }.start()
+        val t = Thread {
+            try {
+                runtime.run()
+            } catch (e: Throwable) {
+                // 兜底：脚本主线程任何未捕获异常都不应崩溃整个 App，转为错误日志
+                runtime.log("E", "脚本异常终止: ${source.name} - ${e.message}")
+            } finally {
+                runtimes.remove(runtime.id)
+            }
+        }
+        t.name = "engine-${source.name}"
+        t.setUncaughtExceptionHandler { th, ex ->
+            runtime.log("E", "引擎线程未捕获异常: ${th.name} - ${ex.message}")
+        }
+        t.start()
         return runtime.id
     }
 

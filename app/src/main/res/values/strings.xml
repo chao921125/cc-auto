@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AutoJs Pro</string>
-    <string name="accessibility_service_description">AutoJs Pro 自动化服务，提供 UI 自动化、控件操作和手势注入功能。</string>
+    <string name="app_name">CcAuto</string>
+    <string name="accessibility_service_description">CcAuto 自动化服务，提供 UI 自动化、控件操作和手势注入功能。</string>
 
     <!-- Navigation -->
     <string name="nav_scripts">脚本</string>

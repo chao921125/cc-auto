@@ -91,9 +91,6 @@ class ScriptThread(
                 val msg = args.joinToString(" ") { it?.toString() ?: "undefined" }
                 runtime.log("I", msg); null
             },
-            "console" to { args: Array<out Any?> ->
-                runtime.log("I", args.joinToString(" ")); null
-            },
             "sleep" to { args: Array<out Any?> ->
                 val ms = (args.getOrNull(0) as? Number)?.toLong() ?: 0L
                 Thread.sleep(ms); null
@@ -119,6 +116,27 @@ class ScriptThread(
             "clearInterval" to { args: Array<out Any?> ->
                 val id = (args.getOrNull(0) as? Number)?.toInt() ?: -1
                 eventLoop.clearTimer(id); null
+            },
+            "exit" to { args: Array<out Any?> ->
+                runtime.stop(); null
+            },
+            "toast" to { args: Array<out Any?> ->
+                val msg = args.getOrNull(0)?.toString() ?: ""
+                val ctx = AppRuntime.context
+                if (ctx != null) {
+                    val len = if ((args.getOrNull(1) as? Number)?.toInt() == 1)
+                        android.widget.Toast.LENGTH_LONG else android.widget.Toast.LENGTH_SHORT
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        runCatching { android.widget.Toast.makeText(ctx, msg, len).show() }
+                    }
+                }
+                null
+            },
+            "random" to { args: Array<out Any?> ->
+                val a = args.getOrNull(0) as? Number
+                val b = args.getOrNull(1) as? Number
+                if (a == null || b == null) Math.random()
+                else (a.toInt() + Math.random() * (b.toInt() - a.toInt() + 1)).toInt().toDouble()
             }
         )
         builtins.forEach { (name, fn) ->
@@ -129,6 +147,87 @@ class ScriptThread(
             }
             ScriptableObject.defineProperty(scope, name, f, ScriptableObject.READONLY)
         }
+
+        // console 作为对象：log/info/warn/error/verbose/debug/show/hide
+        defineObject(scope, "console") {
+            "log" to { a -> runtime.log("I", a.joinToString(" ")); null }
+            "info" to { a -> runtime.log("I", a.joinToString(" ")); null }
+            "debug" to { a -> runtime.log("D", a.joinToString(" ")); null }
+            "warn" to { a -> runtime.log("W", a.joinToString(" ")); null }
+            "error" to { a -> runtime.log("E", a.joinToString(" ")); null }
+            "verbose" to { a -> runtime.log("V", a.joinToString(" ")); null }
+            "show" to { _ -> true }
+            "hide" to { _ -> null }
+            "clear" to { _ -> null }
+        }
+
+        // util
+        defineObject(scope, "util") {
+            "format" to { a ->
+                if (a.isEmpty()) "" else {
+                    val fmt = a[0]?.toString() ?: ""
+                    var i = 1
+                    Regex("%([sdifj])").replace(fmt) { m ->
+                        if (i >= a.size) m.value
+                        else {
+                            val v = a[i++]
+                            when (m.groupValues[1]) {
+                                "d", "i" -> ((v as? Number)?.toDouble()?.toLong() ?: 0L).toString()
+                                "f" -> ((v as? Number)?.toDouble() ?: 0.0).toString()
+                                else -> v?.toString() ?: "null"
+                            }
+                        }
+                    }
+                }
+            }
+            "uuid" to { _ -> java.util.UUID.randomUUID().toString() }
+        }
+
+        // base64
+        defineObject(scope, "base64") {
+            "encode" to { a ->
+                val src = a.getOrNull(0)
+                when (src) {
+                    is String -> android.util.Base64.encodeToString(src.toByteArray(), android.util.Base64.NO_WRAP)
+                    is ByteArray -> android.util.Base64.encodeToString(src, android.util.Base64.NO_WRAP)
+                    else -> ""
+                }
+            }
+            "decode" to { a ->
+                val s = a.getOrNull(0)?.toString() ?: ""
+                String(android.util.Base64.decode(s, android.util.Base64.DEFAULT))
+            }
+        }
+
+        // crypto
+        defineObject(scope, "crypto") {
+            fun digest(algo: String, data: String): String {
+                val bytes = java.security.MessageDigest.getInstance(algo).digest(data.toByteArray())
+                return bytes.joinToString("") { b -> (b.toInt() and 0xFF).toString(16).padStart(2, '0') }
+            }
+            "md5" to { a -> digest("MD5", a.getOrNull(0)?.toString() ?: "") }
+            "sha1" to { a -> digest("SHA-1", a.getOrNull(0)?.toString() ?: "") }
+            "sha256" to { a -> digest("SHA-256", a.getOrNull(0)?.toString() ?: "") }
+        }
+    }
+
+    /** 定义一个顶层对象，其成员为 name -> 函数。 */
+    private fun defineObject(scope: ScriptableObject, name: String, members: ObjectMembers.() -> Unit) {
+        val obj = cx?.newObject(scope) as? ScriptableObject ?: return
+        val builder = ObjectMembers().apply(members)
+        builder.entries.forEach { (key, fn) ->
+            val f = object : BaseFunction() {
+                override fun call(cx: Context, s: Scriptable, thisObj: Scriptable, args: Array<out Any?>): Any? = fn(args)
+            }
+            ScriptableObject.defineProperty(obj, key, f, ScriptableObject.EMPTY)
+        }
+        ScriptableObject.defineProperty(scope, name, obj, ScriptableObject.READONLY)
+    }
+
+    /** 收集对象成员：`"name" to { args -> ... }`。 */
+    inner class ObjectMembers {
+        val entries = linkedMapOf<String, (Array<out Any?>) -> Any?>()
+        infix fun String.to(fn: (Array<out Any?>) -> Any?) { entries[this] = fn }
     }
 
     fun executeInContext(code: String, scriptName: String): Any? {

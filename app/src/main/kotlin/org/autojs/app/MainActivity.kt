@@ -4,10 +4,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import org.autojs.app.ui.EditorFragment
-import org.autojs.app.ui.LogFragment
-import org.autojs.app.ui.ScriptListFragment
+import org.autojs.app.ui.ManageFragment
+import org.autojs.app.ui.ScriptsFragment
 import org.autojs.app.ui.SettingsFragment
+import org.autojs.app.ui.TutorialFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,9 +20,9 @@ class MainActivity : AppCompatActivity() {
         bottomNav = findViewById(R.id.bottom_nav)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_scripts -> switchFragment(ScriptListFragment())
-                R.id.nav_editor -> switchFragment(EditorFragment())
-                R.id.nav_log -> switchFragment(LogFragment())
+                R.id.nav_scripts -> switchFragment(ScriptsFragment())
+                R.id.nav_manage -> switchFragment(ManageFragment())
+                R.id.nav_tutorial -> switchFragment(TutorialFragment())
                 R.id.nav_settings -> switchFragment(SettingsFragment())
                 else -> false
             }

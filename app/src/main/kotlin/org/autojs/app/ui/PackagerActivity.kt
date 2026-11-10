@@ -44,7 +44,7 @@ class PackagerActivity : AppCompatActivity() {
         val config = ApkPackager.PackageConfig(
             mainScript = scriptPath.text.toString(),
             packageName = packageName.text.toString().ifBlank { "org.autojs.packaged" },
-            appName = appName.text.toString().ifBlank { "AutoJs App" },
+            appName = appName.text.toString().ifBlank { "CcAuto App" },
             versionName = versionName.text.toString().ifBlank { "1.0.0" }
         )
         progressBar.progress = 0
