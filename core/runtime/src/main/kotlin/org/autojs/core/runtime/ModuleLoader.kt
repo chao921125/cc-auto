@@ -17,7 +17,7 @@ class ModuleLoader(private val scriptDir: String) {
     private val builtinModules = mutableSetOf(
         "auto", "images", "ocr", "floaty", "ui", "files", "storages",
         "http", "app", "device", "shell", "threads", "timers", "events",
-        "dialogs", "console", "engines", "util", "crypto", "base64", "ui"
+        "dialogs", "console", "engines", "util", "crypto", "base64", "ui", "roots"
     )
 
     fun require(cx: Context, scope: Scriptable, moduleName: String): Any? {

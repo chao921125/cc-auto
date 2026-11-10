@@ -32,7 +32,8 @@ object TutorialData {
                 "random() / random(min,max)  随机数\n" +
                 "base64.encode/decode        编解码\n" +
                 "crypto.md5/sha1/sha256      哈希\n" +
-                "util.format(fmt, ...)       字符串格式化",
+                "util.format(fmt, ...)       字符串格式化\n" +
+                "setClipBoard/getClipBoard   剪贴板（读写）",
             "builtins_demo.js"
         ),
 
@@ -125,12 +126,14 @@ object TutorialData {
 
         // ===== 界面 =====
         TutorialTopic(
-            "界面", "悬浮窗", "floaty.window / 控制台",
-            "floaty 创建置顶悬浮窗：\n\n" +
-                "floaty.window(`<text text=\"运行中\"/>`)\n" +
-                "floaty.closeAll() 关闭全部\n" +
-                "floaty.isOverlaysEnabled() / openOverlaySettings()\n\n" +
-                "console.show() 可显示脚本控制台（若已实现悬浮控制台）。",
+            "界面", "悬浮窗", "floaty.window + id 绑定",
+            "floaty 创建置顶悬浮窗，XML 中 id 自动绑定到返回值：\n\n" +
+                "var w = floaty.window('<frame><text id=\"t\" text=\"运行中\"/></frame>')\n" +
+                "w.t.setText(\"计数: 1\")   // id 绑定更新\n" +
+                "w.t.on(\"click\", fn)      // 控件事件\n" +
+                "w.close() / floaty.close(w)\n" +
+                "floaty.closeAll()\n" +
+                "floaty.isOverlaysEnabled() / openOverlaySettings()",
             "floaty_demo.js"
         ),
         TutorialTopic(
@@ -215,13 +218,17 @@ object TutorialData {
 
         // ===== 系统能力 =====
         TutorialTopic(
-            "系统能力", "Shell 与 Root", "shell.exec",
-            "命令执行：\n\n" +
-                "var r = shell(\"getprop ro.product.model\")\n" +
-                "r.result / r.error\n" +
-                "shell.isRootAvailable()  是否可用 root\n\n" +
-                "普通 shell 权限有限，部分命令需 root。",
-            "shell_demo.js"
+            "系统能力", "Shell 与 Root", "shell() / roots.exec / 无 root 降级",
+            "全局 shell 可调用，也带成员：\n\n" +
+                "var r = shell(\"echo hi\")        // r.code / r.result / r.error\n" +
+                "shell(cmd, true)                // 经 su 执行\n" +
+                "shell.exec(cmd[, root]) / shell.isRootAvailable()\n\n" +
+                "roots 命名空间（对齐 AutoJS Pro）：\n" +
+                "roots.available()               是否已 root\n" +
+                "roots.exec(cmd)                 同步 root 执行\n" +
+                "roots.shell(cmd, callback)      异步回调\n\n" +
+                "无 root 设备全部安全降级、不崩溃。",
+            "roots_demo.js"
         ),
         TutorialTopic(
             "系统能力", "Shizuku", "shizuku.exec",
@@ -293,8 +300,21 @@ object TutorialData {
                 "events.emit(\"evt\", payload)\n\n" +
                 "独立发射器：\n" +
                 "var e = events.emitter(); e.on(\"x\", fn); e.emit(\"x\", 1)\n\n" +
-                "注：键盘/触摸等系统级事件监听需 root/无障碍注入，属后续增强。",
+                "注：触摸事件监听（需 root）仍为待实现。",
             "events_demo.js"
+        ),
+        TutorialTopic(
+            "事件与对话框", "按键监听", "events.observeKey / onKeyDown",
+            "经无障碍服务的按键过滤监听硬件按键（需先在设置开启无障碍服务）：\n\n" +
+                "events.observeKey()\n" +
+                "events.onKeyDown(\"volume_up\", function(code){ ... })\n" +
+                "events.onKeyUp(\"back\", fn)\n" +
+                "events.onceKeyDown(\"enter\", fn)\n" +
+                "events.removeAllKeyListeners()\n\n" +
+                "键名：back/home/menu/volume_up/volume_down/enter/del/space/dpad_* 或数字 keyCode。\n" +
+                "observeKey() 双通道：无障碍过滤 + root 设备上的 getevent 内核读取兜底。\n" +
+                "注意：adb 注入的 keyevent 不经过无障碍过滤，验证需真实按键或 root。",
+            "key_event_demo.js"
         ),
         TutorialTopic(
             "事件与对话框", "对话框 dialogs", "alert / confirm / rawInput / singleChoice",

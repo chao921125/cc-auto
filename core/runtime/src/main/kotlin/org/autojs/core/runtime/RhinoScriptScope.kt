@@ -44,6 +44,14 @@ class RhinoScriptScope(
         ScriptableObject.defineProperty(obj, memberName, jsValue, ScriptableObject.EMPTY)
     }
 
+    override fun createDynamicObject(members: MutableMap<String, Any?>): Any? {
+        val obj = JsMapObject(members)
+        obj.setParentScope(target)
+        val proto = cx.newObject(target)
+        obj.setPrototype(proto.getPrototype() ?: proto)
+        return obj
+    }
+
     private fun installBuilderMembers(obj: ScriptableObject, members: Map<String, Any?>) {
         for ((key, value) in members) {
             when (value) {

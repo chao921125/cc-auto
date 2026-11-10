@@ -32,7 +32,7 @@ class FloatyApiProvider(private val context: android.content.Context) : ApiProvi
                         manager.closeWindow(fw); return null
                     }
                 }
-                JsMapObject(members)
+                scope.createDynamicObject(members)
             }
             function("close") { args ->
                 when (val w = args.getOrNull(0)) {

@@ -39,10 +39,12 @@ class EventsApiProvider : ApiProvider {
                 null
             }
 
-            // ===== 硬件按键事件（经无障碍 filterKeyEvents）=====
+            // ===== 硬件按键事件：无障碍过滤通道 + root getevent 兜底 =====
             function("observeKey") { _ ->
                 org.autojs.core.api.KeyEventBus.observing = true
-                true
+                val rootOk = org.autojs.core.runtime.RootKeyEventReader.start()
+                val a11yOk = isA11yServiceEnabled()
+                rootOk || a11yOk
             }
             function("onKeyDown") { args ->
                 val code = keyCode(args.getOrNull(0))
@@ -80,6 +82,20 @@ class EventsApiProvider : ApiProvider {
                 org.autojs.core.api.KeyEventBus.clearAll(); null
             }
         }
+    }
+
+    /** 本应用的无障碍服务是否已在系统开启。 */
+    private fun isA11yServiceEnabled(): Boolean {
+        val ctx = org.autojs.core.runtime.AppRuntime.context ?: return false
+        return try {
+            val am = ctx.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE)
+                as? android.view.accessibility.AccessibilityManager ?: return false
+            am.getEnabledAccessibilityServiceList(
+                android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK
+            ).any {
+                it.resolveInfo?.serviceInfo?.packageName == ctx.packageName
+            }
+        } catch (e: Exception) { false }
     }
 
     /** 键名或数字 → keyCode。 */

@@ -12,6 +12,7 @@ class EventLoop(private val thread: ScriptThread) {
 
     private val timerIdGen = AtomicInteger(0)
     private val timers = PriorityBlockingQueue<TimerTask>()
+    private val cancelled = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
     private val microtasks = ArrayDeque<() -> Unit>()
     private val running = AtomicBoolean(true)
     private val lock = Object()
@@ -33,6 +34,7 @@ class EventLoop(private val thread: ScriptThread) {
     }
 
     fun clearTimer(id: Int) {
+        cancelled.add(id)
         timers.removeIf { it.id == id }
     }
 
@@ -56,20 +58,26 @@ class EventLoop(private val thread: ScriptThread) {
                 } else break
             }
             for (t in dueTimers) {
+                if (t.id in cancelled) continue
                 executeTimer(t)
-                if (t.interval > 0 && running.get()) {
+                if (t.interval > 0 && running.get() && t.id !in cancelled) {
                     timers.offer(t.copy(fireAt = System.currentTimeMillis() + t.interval))
+                } else if (t.interval <= 0) {
+                    cancelled.remove(t.id)
                 }
             }
 
-            // 无任务时等待
+            // 无任务时：若队列为空且主脚本已结束，退出循环（线程随之结束，避免泄漏）
             if (timers.isEmpty() && microtasks.isEmpty()) {
-                synchronized(lock) {
-                    val nextFire = timers.peek()?.fireAt
-                    val waitMs = if (nextFire != null) {
-                        (nextFire - System.currentTimeMillis()).coerceAtLeast(1)
-                    } else 100L
-                    lock.wait(waitMs)
+                val nextFire = timers.peek()?.fireAt
+                if (nextFire == null) {
+                    // 给新任务一点缓冲：短暂等待后再确认一次
+                    synchronized(lock) {
+                        if (timers.isEmpty() && microtasks.isEmpty()) {
+                            lock.wait(100)
+                        }
+                    }
+                    if (timers.isEmpty() && microtasks.isEmpty()) break
                 }
             }
         }

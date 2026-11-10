@@ -16,6 +16,8 @@ android {
 
 dependencies {
     api(project(Modules.CORE_API))
+    implementation(project(Modules.CORE_RUNTIME))
+    implementation(Deps.RHINO)
     implementation(Deps.CORE_KTX)
     implementation(Deps.COROUTINES)
 }

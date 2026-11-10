@@ -45,6 +45,9 @@ interface ScriptScope {
 
     /** 向已存在的命名空间对象动态绑定成员（如 ui.layout 后的 id 绑定）。 */
     fun bindMember(objectName: String, memberName: String, value: Any?)
+
+    /** 创建带正确 prototype/parentScope 的动态成员对象（如 floaty.window 返回值）。 */
+    fun createDynamicObject(members: MutableMap<String, Any?>): Any?
 }
 
 /**

@@ -165,6 +165,23 @@ class ScriptThread(
             ScriptableObject.defineProperty(scope, name, f, ScriptableObject.READONLY)
         }
 
+        // 剪贴板（两种命名都给，对齐 AutoJS Pro 的 setClipBoard 拼写）
+        val clipFns = mapOf(
+            "setClipBoard" to { a: Array<out Any?> -> setClipBoard(a.getOrNull(0)?.toString() ?: ""); null },
+            "setClipboard" to { a: Array<out Any?> -> setClipBoard(a.getOrNull(0)?.toString() ?: ""); null },
+            "getClipBoard" to { _: Array<out Any?> -> getClipBoard() },
+            "getClipboard" to { _: Array<out Any?> -> getClipBoard() }
+        )
+        clipFns.forEach { (name, fn) ->
+            val f = object : BaseFunction() {
+                override fun call(cx: Context, scope: Scriptable, thisObj: Scriptable, args: Array<out Any?>): Any? = fn(args)
+            }
+            ScriptableObject.defineProperty(scope, name, f, ScriptableObject.READONLY)
+        }
+
+        // 全局 shell：可调用且带 .exec/.isRootAvailable（覆盖 shell 命名空间对象，行为保持兼容）
+        ScriptableObject.defineProperty(scope, "shell", ShellCallable(), ScriptableObject.READONLY)
+
         // console 作为对象：log/info/warn/error/verbose/debug/show/hide
         defineObject(scope, "console") {
             "log" to { a -> runtime.log("I", a.joinToString(" ")); null }

@@ -92,8 +92,10 @@ let result = ocr.recognize(img, {region: [x,y,w,h]})
 ## floaty — 悬浮窗
 
 ```javascript
-let w = floaty.window('<frame><text text="Hello"/></frame>')
-floaty.close(w)
+let w = floaty.window('<frame><text id="t" text="悬浮窗"/></frame>')
+w.t.setText("计数: 1")        // XML 中 id 自动绑定到返回值
+w.t.on("click", () => { ... })
+w.close()                      // 或 floaty.close(w)
 floaty.closeAll()
 floaty.isOverlaysEnabled()
 let console = floaty.console()
@@ -194,6 +196,33 @@ app.openUrl(url)
 let r = shell.exec("ls -la", false)
 // r.code, r.result, r.error
 shell.isRootAvailable()
+
+var r = shell("echo hi")               // 全局可调用形式
+var r2 = shell("getprop ro.product.brand", true)  // true = 经 su 执行
+```
+
+---
+
+## roots — Root 能力（对齐 AutoJS Pro）
+
+```javascript
+roots.available()                 // 是否已 root（结果缓存）
+var r = roots.exec("id")          // 同步 root 执行：r.code / r.result / r.error
+roots.shell("getprop ro.product.brand", function (res) {
+    log(res.result)               // 异步回调式
+})
+```
+
+无 root 设备安全降级：`available()=false`、`exec` 返回错误码不崩溃。
+root 设备上 `events.observeKey()` 会自动启用 **root 按键通道**（`su -c getevent -l` 读内核事件，作为无障碍过滤的兜底）。
+
+---
+
+## 剪贴板
+
+```javascript
+setClipBoard("文本")   // 别名 setClipboard
+getClipBoard()         // 别名 getClipboard（Android 10+ 限前台读取）
 ```
 
 ---
@@ -237,9 +266,17 @@ events.removeAllListeners("event")
 // 独立发射器
 var e = events.emitter()
 e.on("x", fn); e.emit("x", 1); e.off("x")
+
+// 硬件按键监听（需开启无障碍服务，由 onKeyEvent 过滤）
+events.observeKey()
+events.onKeyDown("volume_up", function (code) { ... })
+events.onKeyUp("back", fn)
+events.onceKeyDown("enter", fn)
+events.removeAllKeyListeners()
 ```
 
-> 键盘/触摸等系统级事件监听需 root 或无障碍注入，属后续增强。
+> 按键名支持：back/home/menu/power/volume_up/volume_down/enter/del/space/tab/camera/dpad_* 或直接传 keyCode 数字。
+> 注意：仅真实按键事件会进入无障碍 onKeyEvent 过滤；adb `input keyevent` 注入与部分系统快捷键（如电源）不会触发。触摸事件监听（需 root）仍为待实现。
 
 ---
 
