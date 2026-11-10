@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.6" />
+    <bytecodeTargetLevel target="17">
+      <module name="autoengine.app" target="17" />
+      <module name="autoengine.buildSrc" target="17" />
+      <module name="autoengine.buildSrc.main" target="17" />
+      <module name="autoengine.buildSrc.test" target="17" />
+      <module name="autoengine.core.api" target="17" />
+      <module name="autoengine.core.runtime" target="17" />
+      <module name="autoengine.feature.devplugin" target="17" />
+      <module name="autoengine.feature.inspector" target="17" />
+      <module name="autoengine.feature.packager" target="17" />
+      <module name="autoengine.feature.scheduler" target="17" />
+      <module name="autoengine.feature.tasker" target="17" />
+      <module name="autoengine.toolkit.accessibility" target="17" />
+      <module name="autoengine.toolkit.device" target="17" />
+      <module name="autoengine.toolkit.floaty" target="17" />
+      <module name="autoengine.toolkit.ml" target="17" />
+      <module name="autoengine.toolkit.network" target="17" />
+      <module name="autoengine.toolkit.notification" target="17" />
+      <module name="autoengine.toolkit.shell" target="17" />
+      <module name="autoengine.toolkit.shizuku" target="17" />
+      <module name="autoengine.toolkit.storage" target="17" />
+      <module name="autoengine.toolkit.vision" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>

@@ -7,35 +7,9 @@
         <compositeConfiguration>
           <compositeBuild compositeDefinitionSource="SCRIPT">
             <builds>
-              <build path="$PROJECT_DIR$/autoengine" name="autoengine">
+              <build path="$PROJECT_DIR$/buildSrc" name="buildSrc">
                 <projects>
-                  <project path="$PROJECT_DIR$/autoengine" />
-                  <project path="$PROJECT_DIR$/autoengine/app" />
-                  <project path="$PROJECT_DIR$/autoengine/core" />
-                  <project path="$PROJECT_DIR$/autoengine/core/api" />
-                  <project path="$PROJECT_DIR$/autoengine/core/runtime" />
-                  <project path="$PROJECT_DIR$/autoengine/feature" />
-                  <project path="$PROJECT_DIR$/autoengine/feature/devplugin" />
-                  <project path="$PROJECT_DIR$/autoengine/feature/inspector" />
-                  <project path="$PROJECT_DIR$/autoengine/feature/packager" />
-                  <project path="$PROJECT_DIR$/autoengine/feature/scheduler" />
-                  <project path="$PROJECT_DIR$/autoengine/feature/tasker" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/accessibility" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/device" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/floaty" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/ml" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/network" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/notification" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/shell" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/shizuku" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/storage" />
-                  <project path="$PROJECT_DIR$/autoengine/toolkit/vision" />
-                </projects>
-              </build>
-              <build path="$PROJECT_DIR$/autoengine/buildSrc" name="buildSrc">
-                <projects>
-                  <project path="$PROJECT_DIR$/autoengine/buildSrc" />
+                  <project path="$PROJECT_DIR$/buildSrc" />
                 </projects>
               </build>
             </builds>
@@ -47,29 +21,28 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/autoengine" />
-            <option value="$PROJECT_DIR$/autoengine/app" />
-            <option value="$PROJECT_DIR$/autoengine/buildSrc" />
-            <option value="$PROJECT_DIR$/autoengine/core" />
-            <option value="$PROJECT_DIR$/autoengine/core/api" />
-            <option value="$PROJECT_DIR$/autoengine/core/runtime" />
-            <option value="$PROJECT_DIR$/autoengine/feature" />
-            <option value="$PROJECT_DIR$/autoengine/feature/devplugin" />
-            <option value="$PROJECT_DIR$/autoengine/feature/inspector" />
-            <option value="$PROJECT_DIR$/autoengine/feature/packager" />
-            <option value="$PROJECT_DIR$/autoengine/feature/scheduler" />
-            <option value="$PROJECT_DIR$/autoengine/feature/tasker" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/accessibility" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/device" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/floaty" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/ml" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/network" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/notification" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/shell" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/shizuku" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/storage" />
-            <option value="$PROJECT_DIR$/autoengine/toolkit/vision" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/buildSrc" />
+            <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/core/api" />
+            <option value="$PROJECT_DIR$/core/runtime" />
+            <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/devplugin" />
+            <option value="$PROJECT_DIR$/feature/inspector" />
+            <option value="$PROJECT_DIR$/feature/packager" />
+            <option value="$PROJECT_DIR$/feature/scheduler" />
+            <option value="$PROJECT_DIR$/feature/tasker" />
+            <option value="$PROJECT_DIR$/toolkit" />
+            <option value="$PROJECT_DIR$/toolkit/accessibility" />
+            <option value="$PROJECT_DIR$/toolkit/device" />
+            <option value="$PROJECT_DIR$/toolkit/floaty" />
+            <option value="$PROJECT_DIR$/toolkit/ml" />
+            <option value="$PROJECT_DIR$/toolkit/network" />
+            <option value="$PROJECT_DIR$/toolkit/notification" />
+            <option value="$PROJECT_DIR$/toolkit/shell" />
+            <option value="$PROJECT_DIR$/toolkit/shizuku" />
+            <option value="$PROJECT_DIR$/toolkit/storage" />
+            <option value="$PROJECT_DIR$/toolkit/vision" />
           </set>
         </option>
       </GradleProjectSettings>
