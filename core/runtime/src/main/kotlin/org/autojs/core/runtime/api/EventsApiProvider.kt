@@ -2,6 +2,7 @@ package org.autojs.core.runtime.api
 
 import org.autojs.core.api.ApiProvider
 import org.autojs.core.api.ScriptScope
+import org.autojs.core.runtime.callJsFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.Scriptable
@@ -37,7 +38,75 @@ class EventsApiProvider : ApiProvider {
                 global.emit(event, *args.drop(1).toTypedArray())
                 null
             }
+
+            // ===== 硬件按键事件（经无障碍 filterKeyEvents）=====
+            function("observeKey") { _ ->
+                org.autojs.core.api.KeyEventBus.observing = true
+                true
+            }
+            function("onKeyDown") { args ->
+                val code = keyCode(args.getOrNull(0))
+                val fn = args.getOrNull(1) as? Function ?: return@function null
+                if (code != null) org.autojs.core.api.KeyEventBus.onDown(code) { k ->
+                    callJsFunction(fn, arrayOf(k))
+                }
+                null
+            }
+            function("onKeyUp") { args ->
+                val code = keyCode(args.getOrNull(0))
+                val fn = args.getOrNull(1) as? Function ?: return@function null
+                if (code != null) org.autojs.core.api.KeyEventBus.onUp(code) { k ->
+                    callJsFunction(fn, arrayOf(k))
+                }
+                null
+            }
+            function("onceKeyDown") { args ->
+                val code = keyCode(args.getOrNull(0))
+                val fn = args.getOrNull(1) as? Function ?: return@function null
+                if (code != null) org.autojs.core.api.KeyEventBus.onceDown(code) { k ->
+                    callJsFunction(fn, arrayOf(k))
+                }
+                null
+            }
+            function("onceKeyUp") { args ->
+                val code = keyCode(args.getOrNull(0))
+                val fn = args.getOrNull(1) as? Function ?: return@function null
+                if (code != null) org.autojs.core.api.KeyEventBus.onceUp(code) { k ->
+                    callJsFunction(fn, arrayOf(k))
+                }
+                null
+            }
+            function("removeAllKeyListeners") { _ ->
+                org.autojs.core.api.KeyEventBus.clearAll(); null
+            }
         }
+    }
+
+    /** 键名或数字 → keyCode。 */
+    private fun keyCode(v: Any?): Int? = when (v) {
+        is Number -> v.toInt()
+        is String -> when (v.lowercase()) {
+            "back" -> android.view.KeyEvent.KEYCODE_BACK
+            "home" -> android.view.KeyEvent.KEYCODE_HOME
+            "menu" -> android.view.KeyEvent.KEYCODE_MENU
+            "power" -> android.view.KeyEvent.KEYCODE_POWER
+            "volume_up", "volup", "volumeup" -> android.view.KeyEvent.KEYCODE_VOLUME_UP
+            "volume_down", "voldown", "volumedown" -> android.view.KeyEvent.KEYCODE_VOLUME_DOWN
+            "volume_mute" -> android.view.KeyEvent.KEYCODE_VOLUME_MUTE
+            "enter" -> android.view.KeyEvent.KEYCODE_ENTER
+            "del", "delete" -> android.view.KeyEvent.KEYCODE_DEL
+            "space" -> android.view.KeyEvent.KEYCODE_SPACE
+            "tab" -> android.view.KeyEvent.KEYCODE_TAB
+            "camera" -> android.view.KeyEvent.KEYCODE_CAMERA
+            "app_switch" -> android.view.KeyEvent.KEYCODE_APP_SWITCH
+            "dpad_up" -> android.view.KeyEvent.KEYCODE_DPAD_UP
+            "dpad_down" -> android.view.KeyEvent.KEYCODE_DPAD_DOWN
+            "dpad_left" -> android.view.KeyEvent.KEYCODE_DPAD_LEFT
+            "dpad_right" -> android.view.KeyEvent.KEYCODE_DPAD_RIGHT
+            "dpad_center" -> android.view.KeyEvent.KEYCODE_DPAD_CENTER
+            else -> v.toIntOrNull()
+        }
+        else -> null
     }
 
     /** 通用事件发射器，暴露给 JS 调用 on/once/off/emit。 */
