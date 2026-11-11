@@ -22,6 +22,9 @@
 | `events` | 事件总线 | P0 |
 | `console` | 控制台 | P0 |
 | `engines` | 引擎管理 | P0 |
+| `sensors` | 传感器读取/监听 | P1 |
+| `power_manager` | 电源/电量/唤醒 | P1 |
+| `canvas` | 2D 画布绘图 | P1 |
 
 ---
 
@@ -123,8 +126,9 @@ ui.run(function () { /* 在主线程执行并返回结果 */ });
 ui.finish();   // 关闭脚本 UI
 ```
 
-> 支持标签：vertical/horizontal/linear/frame/relative/text/button/input/img/checkbox/switch/scroll/list/progressbar/seekbar/spinner/radiogroup；
+> 支持标签：vertical/horizontal/linear/frame/relative/text/button/input/img/checkbox/switch/scroll/list/progressbar/seekbar/spinner/radiogroup/canvas；
 > 常用属性：id/text/hint/w/h/padding/margin*/layout_weight/bg/textColor/textSize/gravity/max/progress/checked。
+> `<canvas>` 控件通过 `on("draw", fn)` 绑定绘制回调（参数为画布对象，见 canvas 章节），`invalidate()` 触发重绘。
 > 注意：Rhino 模板字符串不支持多行，XML 请用字符串拼接书写。
 
 ---
@@ -272,6 +276,132 @@ settings.getFloat(key)
 settings.set("screen_brightness", 100)     // 需 WRITE_SETTINGS，未授权返回 false
 settings.canWrite() / settings.requestWritePermission()
 ```
+
+---
+
+## sensors — 传感器
+
+```javascript
+sensors.has(sensors.ACCELEROMETER)          // 是否支持该类型
+sensors.getSensorList()                     // 全部传感器（数组，元素含 name/vendor/type/maxRange...）
+sensors.getSensorList(sensors.ACCELEROMETER)// 按类型过滤
+sensors.register(sensors.GYROSCOPE, sensors.SENSOR_DELAY_UI)  // 开启采集（缓存最近读数）
+sensors.on(sensors.ACCELEROMETER, function(type, values, ts){  // 事件回调
+    log(values[0], values[1], values[2]);
+});
+sensors.acceleration()                      // 最近读数 {x,y,z,values,timestamp,accuracy}；首次访问自动注册
+sensors.gravity() / sensors.linearAcceleration() / sensors.gyroscope()
+sensors.magneticField() / sensors.light() / sensors.proximity() / sensors.pressure()
+sensors.get(sensors.LIGHT)                  // 通用读取
+sensors.unregister(sensors.ACCELEROMETER)   // 关闭；无参=全部
+// 常量：ACCELEROMETER/MAGNETIC_FIELD/GYROSCOPE/LIGHT/PRESSURE/PROXIMITY/GRAVITY/
+//       LINEAR_ACCELERATION/ROTATION_VECTOR/... 及 SENSOR_DELAY_NORMAL/UI/GAME/FASTEST
+```
+
+> 模拟器仅有部分虚拟传感器；真机更全。读数对象用 JS 属性访问（.x/.y/.z）。
+
+---
+
+## power_manager — 电源与电量
+
+```javascript
+power_manager.isScreenOn()                  // 屏幕是否亮（PowerManager.isInteractive）
+power_manager.wakeUp()                      // 唤醒屏幕（input keyevent WAKEUP，免 root）
+power_manager.sleep()                       // 熄屏（通常需 root，失败返回 false）
+power_manager.batteryLevel()                // 0-100
+power_manager.batteryStatus()               // 状态常量（STATUS_CHARGING/FULL/DISCHARGING...）
+power_manager.isCharging()                  // 是否充电
+power_manager.plugType()                    // PLUGGED_AC/USB/WIRELESS
+power_manager.temperature() / power_manager.voltage() / power_manager.health()
+power_manager.batteryInfo()                 // 汇总对象 {level,scale,status,health,plugged,temperature,voltage,isCharging}
+power_manager.keepAwake(true)               // PARTIAL_WAKE_LOCK 保持 CPU（不锁屏）
+power_manager.isDeviceIdleMode()
+```
+
+---
+
+## canvas — 2D 画布
+
+对齐 AutoJS Pro 一代 canvas 模块（Android Canvas 包装）。两种画布来源：
+
+1. **位图画布**：`canvas.create(w, h)` / `canvas.fromBitmap(bmp)`（CcAuto 工厂入口；Pro 经 Java 交互 `new Canvas(bitmap)` 获得，本引擎沙箱不开放 Java 交互）。绘制结果用 `getBitmap()` 取出，可接 `images.save` / 找色。
+2. **视图画布**：ui / floaty XML 中的 `<canvas id="board"/>` 控件，`ui.board.on("draw", function(c){...})` 回调参数即画布（与 Pro 一致）；`ui.board.invalidate()` 触发重绘。
+
+```javascript
+// 位图画布
+let c = canvas.create(200, 120);
+c.drawColor(colors.rgb(255, 255, 255));
+let paint = new Paint();                 // 全局 Paint 构造器（对齐 Pro 写法）
+paint.setColor(colors.rgb(255, 0, 0));
+paint.setStyle(Paint.Style.FILL);        // FILL / STROKE / FILL_AND_STROKE
+paint.setAntiAlias(true);
+c.drawRect(10, 10, 50, 50, paint);       // 也接受 {left,top,right,bottom} 或 [l,t,r,b]
+c.drawCircle(100, 60, 20, paint);
+images.save(c.getBitmap(), "/sdcard/canvas_out.png");
+
+// 视图画布（"ui" 模式）
+ui.layout('<frame w="*" h="*"><canvas id="board" w="*" h="*"/></frame>');
+ui.board.on("draw", function (c) {
+    c.drawColor(colors.rgb(255, 255, 255));
+    c.drawText("hello", 40, 100, paint);
+});
+```
+
+画布方法（均已模拟器逐像素实测）：
+
+```javascript
+c.getWidth() / c.getHeight()
+c.drawRGB(r, g, b) / c.drawARGB(a, r, g, b)
+c.drawColor(color)                 // color 为整数或 "#RRGGBB" 字符串
+c.drawColor(color, mode)           // mode 为 PorterDuff 模式名，如 "CLEAR"/"SRC_OVER"
+c.drawPaint(paint)
+c.drawPoint(x, y, paint) / c.drawPoints([x0,y0,x1,y1,...], paint)
+c.drawLine(x1, y1, x2, y2, paint) / c.drawLines([x0,y0,x1,y1,...], paint)
+c.drawRect(l, t, r, b, paint)      // 或 drawRect(rectObj, paint)
+c.drawRoundRect(l, t, r, b, rx, ry, paint)   // 或 drawRoundRect(rectObj, rx, ry, paint)
+c.drawCircle(cx, cy, radius, paint)
+c.drawOval(l, t, r, b, paint)      // 或 drawOval(rectObj, paint)
+c.drawArc(l, t, r, b, startAngle, sweepAngle, useCenter, paint)  // 或 drawArc(rectObj, ...)
+c.drawPath(path, paint)
+c.drawBitmap(bitmap, left, top[, paint])
+c.drawText(text, x, y, paint)
+c.drawTextOnPath(text, path, hOffset, vOffset, paint)
+c.translate(dx, dy)
+c.scale(sx, sy[, px, py]) / c.rotate(degrees[, px, py]) / c.skew(sx, sy)
+c.save() / c.restore() / c.clipRect(l, t, r, b)
+c.getBitmap()                      // 视图画布返回 null
+canvas.paint() / canvas.path()     // 工厂简写
+```
+
+Paint（`new Paint()`，附 `Paint.Style/Align/Cap/Join` 常量）：
+
+```javascript
+paint.setColor(intOrHex) / paint.setARGB(a, r, g, b) / paint.setAlpha(a)
+paint.getColor() / paint.getAlpha()
+paint.setStyle(Paint.Style.FILL)   // 接受常量、字符串或序号
+paint.setStrokeWidth(w) / paint.getStrokeWidth()
+paint.setStrokeCap(Paint.Cap.ROUND) / paint.setStrokeJoin(Paint.Join.BEVEL)
+paint.setAntiAlias(bool) / paint.isAntiAlias() / paint.setDither(bool)
+paint.setTextSize(px) / paint.getTextSize() / paint.measureText(text)
+paint.setTextAlign(Paint.Align.CENTER)
+paint.setTextScaleX(x) / paint.setTextSkewX(x) / paint.setLetterSpacing(em)
+paint.setFakeBoldText(bool) / paint.setUnderlineText(bool) / paint.setStrikeThruText(bool)
+paint.setShadowLayer(radius, dx, dy, color) / paint.clearShadowLayer()
+```
+
+Path（`new Path()`）：
+
+```javascript
+path.moveTo(x, y) / path.lineTo(x, y)
+path.quadTo(x1, y1, x2, y2) / path.cubicTo(x1, y1, x2, y2, x3, y3)
+path.arcTo(l, t, r, b, startAngle, sweepAngle, forceMoveTo)
+path.addRect(l, t, r, b) / path.addRoundRect(l, t, r, b, rx, ry)
+path.addOval(l, t, r, b) / path.addCircle(cx, cy, r)
+path.close() / path.reset() / path.offset(dx, dy)
+```
+
+> 与 Pro 的差异：不支持 `drawPicture`（Picture 录制）、Paint 的 shader/maskFilter/xfermode/typeface 设置；
+> 矩形对象用 JS 对象 `{left,top,right,bottom}` 代替 Java Rect/RectF。视图画布使用软件层渲染，全部绘制操作可用。
 
 ---
 

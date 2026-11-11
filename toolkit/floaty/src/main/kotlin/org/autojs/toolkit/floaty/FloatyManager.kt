@@ -36,9 +36,13 @@ class FloatyManager(private val context: Context) {
      * @param height 高度
      */
     fun createWindow(view: View, x: Int = 0, y: Int = 0, width: Int = WRAP, height: Int = WRAP): FloatWindow {
+        // 未显式指定窗口尺寸时，尊重 XML 根视图的 w/h（否则 WRAP_CONTENT 窗口会忽略根布局参数）
+        val rootLp = view.layoutParams
+        val w = if (width == WRAP && rootLp != null && rootLp.width > 0) rootLp.width else width
+        val h = if (height == WRAP && rootLp != null && rootLp.height > 0) rootLp.height else height
         val params = WindowManager.LayoutParams(
-            if (width == WRAP) WindowManager.LayoutParams.WRAP_CONTENT else width,
-            if (height == WRAP) WindowManager.LayoutParams.WRAP_CONTENT else height,
+            if (w == WRAP) WindowManager.LayoutParams.WRAP_CONTENT else w,
+            if (h == WRAP) WindowManager.LayoutParams.WRAP_CONTENT else h,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or

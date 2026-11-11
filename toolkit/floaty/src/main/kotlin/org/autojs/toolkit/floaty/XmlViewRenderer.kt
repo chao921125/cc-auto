@@ -20,7 +20,7 @@ import org.xmlpull.v1.XmlPullParser
  * 用于 floaty.window(xml) 和 ui.layout(xml)。
  *
  * 支持标签：frame/linear/vertical/horizontal/relative/text/button/input/edittext/img/
- *          checkbox/switch/scroll/list/progressbar/seekbar/spinner/radiogroup
+ *          checkbox/switch/scroll/list/progressbar/seekbar/spinner/radiogroup/canvas
  * 支持属性：id, text, hint, w/h(width/height), padding, margin*, layout_weight, bg,
  *          gravity, textColor, textSize, max, progress, checked, onClick
  */
@@ -113,6 +113,7 @@ class XmlViewRenderer(private val context: Context) {
         "seekbar" -> android.widget.SeekBar(context)
         "spinner" -> android.widget.Spinner(context)
         "radiogroup" -> android.widget.RadioGroup(context)
+        "canvas" -> org.autojs.core.runtime.canvas.ScriptCanvasView(context)
         else -> TextView(context)
     }
 

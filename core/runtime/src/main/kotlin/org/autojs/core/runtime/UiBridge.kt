@@ -41,10 +41,19 @@ class UiViewBinder(private val view: View) {
                     callJs(fn, arrayOf(checked))
                 }
             }
+            "draw" -> UiBridge.mainHandler.post {
+                (view as? org.autojs.core.runtime.canvas.ScriptCanvasView)?.let { cv ->
+                    cv.drawCallback = { scriptCanvas -> callJs(fn, arrayOf(scriptCanvas)) }
+                    cv.invalidate()
+                }
+            }
         }
     }
 
     fun click(fn: Function) = on("click", fn)
+
+    /** 请求重绘（canvas 控件动画常用）。 */
+    fun invalidate() = post { view.invalidate() }
 
     fun setText(value: String) = post { (view as? TextView)?.text = value }
     fun text(): String = (view as? TextView)?.text?.toString() ?: ""

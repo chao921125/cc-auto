@@ -55,6 +55,9 @@ class EngineManager(private val context: Context) {
             register(org.autojs.core.runtime.api.KeysApiProvider())
             register(org.autojs.core.runtime.api.MediaApiProvider())
             register(org.autojs.core.runtime.api.SettingsScriptApiProvider())
+            register(org.autojs.core.runtime.api.SensorsApiProvider())
+            register(org.autojs.core.runtime.api.PowerManagerApiProvider())
+            register(org.autojs.core.runtime.api.CanvasApiProvider())
         }
     }
 

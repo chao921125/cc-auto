@@ -17,6 +17,7 @@ dependencies {
     implementation(Deps.CORE_KTX)
     implementation(Deps.COROUTINES)
     implementation(Deps.MLKIT_TEXT)
+    implementation(Deps.RHINO)
 }
 
 kotlin {

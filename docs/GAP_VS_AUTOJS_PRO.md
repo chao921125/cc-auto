@@ -19,7 +19,7 @@ created: 2026-11-10
 | app | ✅ | launch/openUrl/viewFile/isInstalled/installed 列表等 |
 | base64 | ✅ | encode/decode，值实测正确 |
 | colors | ✅ | parse/rgb/rgba/red/green/blue/alpha/hex/mix/darker/lighter/isSimilar（值实测正确） |
-| canvas | ❌ | 无 |
+| canvas | ✅ | create/fromBitmap 位图画布 + ui/floaty `<canvas>` 控件 draw 回调；drawColor/RGB/ARGB/Paint/Point(s)/Line(s)/Rect/RoundRect/Circle/Oval/Arc/Path/Bitmap/Text/TextOnPath + translate/scale/rotate/skew/save/restore/clipRect；全局 Paint/Path 构造器（含 Style/Align/Cap/Join 常量）；模拟器 58 项逐像素断言 + ui/floaty draw 截图实测；缺 drawPicture 与 Paint shader/maskFilter/xfermode/typeface |
 | console | ✅ | 对象形式 log/info/warn/error/verbose/debug（show/hide 为 no-op） |
 | crypto | ✅ | md5/sha1/sha256，值实测正确 |
 | debug | ❌ | 无（有 VSCode 侧 devplugin 雏形，见产品级） |
@@ -28,22 +28,22 @@ created: 2026-11-10
 | engines | ✅ | myScript/myId/myEngine/runningScriptCount/all/stopAllScripts |
 | events | 🟡 | emitter + 全局总线 + observeKey/onKeyDown/onKeyUp（无障碍+root 双通道）；**按键端到端待真机复验**；触摸监听（root getevent ABS）未做 |
 | files | ✅ | read/write/copy/move/list/zip 等（注意：有内部沙箱路径限制） |
-| floaty | ✅ | window（id 绑定+控件事件实测）/close/closeAll/console |
+| floaty | ✅ | window（id 绑定+控件事件实测）/close/closeAll/console；支持 `<canvas>` draw 回调；修复根视图 w/h 不生效（窗口尺寸现尊重 XML 根布局参数） |
 | globals | ✅ | log/sleep/exit/toast/random/shell/剪贴板 等 |
 | http | ✅ | get/post/postJson/put/delete/download/uploadFile/newWebSocket |
-| images | ✅ | 截图/找图(NCC+多尺度)/找色/多点找色/像素/裁剪缩放 |
+| images | ✅ | 截图/找图(NCC+多尺度)/找色/多点找色/像素/裁剪缩放；已修复 JS 侧 Bitmap/参数解包（jsToJava），pixel/read/save/fromBitmap 往返实测 |
 | keys（按键模拟） | 🟡 | 音量类按键走 AudioManager（免 root，本模拟器镜像音量策略有怪癖未观测到变化）；其他按键需 root 通道，待真机复验 |
 | media | 🟡 | 播放/暂停/恢复/停止/音量（MediaPlayer）；录音未做 |
 | module（require） | ✅ | 文件模块 + 内置模块解析 |
 | ocr | ✅ | ML Kit 中文识别实测链路（示例待跑通核验） |
 | plugins / thirdPartyPlugins | ❌ | 无插件商店/插件协议 |
-| power_manager | ❌ | 无 |
-| sensors | ❌ | 无（未列入本批） |
+| power_manager | ✅ | isScreenOn/isInteractive/wakeUp/sleep/batteryLevel/batteryStatus/isCharging/plugType/health/temperature/voltage/batteryInfo/keepAwake/isDeviceIdleMode；电量经粘性广播读，模拟器实测 level=66 正确（sleep 通常需 root） |
+| sensors | ✅ | has/getSensorList/register/enable/on/unregister/get + acceleration 等便捷 getter + 类型/延迟常量；模拟器实测 18 个传感器、加速度 y≈9.78(1g)、回调经 callJsFunction 派发 |
 | shell | ✅ | 全局可调用 + exec/isRootAvailable，root 降级实测 |
 | storages | ✅ | MMKV 键值 |
 | threads | ✅ | start/shutDownAll/currentThread（子线程实测） |
 | timers | ✅ | setTimeout/setInterval/clear（EventLoop 修复后实测） |
-| ui | ✅ | layout/id 绑定/on 事件/run/finish（模拟器实测渲染+交互）；缺 RecyclerView/ListView 数据绑定、setContentView 全家桶 |
+| ui | ✅ | layout/id 绑定/on 事件/run/finish（模拟器实测渲染+交互）；`<canvas>` 控件 draw 回调实测；缺 RecyclerView/ListView 数据绑定、setContentView 全家桶 |
 | util | ✅ | format/uuid |
 | WebSocket | 🟡 | 有 `http.newWebSocket`，非独立模块 |
 | zip | 🟡 | 有 `files.zip/unzip`，非独立模块 |
@@ -76,6 +76,6 @@ created: 2026-11-10
 
 ## 四、行动建议（按性价比排序）
 1. ~~立即：注册 ml/notifications/shizuku~~ 已完成（typeof 实测），功能级验证待模型文件/服务激活。
-2. 短平快：~~colors/keys/media/settings~~ 已完成（见上表）；剩余：脚本级 work_manager 最小版、sensors、canvas。
+2. 短平快：~~colors/keys/media/settings~~、~~sensors/power_manager~~、~~canvas~~ 已完成（模拟器实测，见上表）；剩余：脚本级 work_manager 最小版。
 3. 中期：编辑器多 Tab + 目录树（对齐"项目"概念）、packager v2（图标/启动图/权限裁剪）、devplugin 升级为真实调试协议（DAP）。
 4. 长期决策：V8/Node 第二引擎、npm 生态、Java 互操作与安全模型的取舍、插件商店。

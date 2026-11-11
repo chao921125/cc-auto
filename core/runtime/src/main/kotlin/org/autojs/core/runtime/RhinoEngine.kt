@@ -65,6 +65,8 @@ class SandboxShutter : ClassShutter {
         "java.util.ArrayList", "java.util.HashMap", "java.util.List",
         "java.util.Map", "java.util.Date", "java.util.regex.Pattern",
         "java.io.File", "java.io.ByteArrayInputStream", "java.io.ByteArrayOutputStream",
+        // 像素数据对象：images/canvas 需要在 JS 侧持有 Bitmap（无文件/网络能力，安全）
+        "android.graphics.Bitmap",
         "kotlin."
     )
 

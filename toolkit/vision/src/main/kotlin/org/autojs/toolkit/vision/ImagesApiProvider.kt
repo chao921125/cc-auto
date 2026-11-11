@@ -1,11 +1,15 @@
 package org.autojs.toolkit.vision
 
+import android.graphics.Bitmap
 import org.autojs.core.api.ApiProvider
 import org.autojs.core.api.ScriptScope
-import org.autojs.core.api.ScriptObjectBuilder
+import org.mozilla.javascript.Context
 
 /**
  * images 命名空间 API：截图、找图、找色、图片操作。
+ *
+ * 注意：JS 侧传入的 Bitmap/对象/数组是 Rhino 包装类型（NativeJavaObject/NativeObject/NativeArray），
+ * 必须经 Context.jsToJava 解包，不能直接 as? 强转。
  */
 class ImagesApiProvider : ApiProvider {
     override val name = "images"
@@ -19,69 +23,76 @@ class ImagesApiProvider : ApiProvider {
             function("requestScreenCapture") { _ -> captureManager.isReady() }
             function("captureScreen") { _ -> captureManager.capture() }
             function("findImage") { args ->
-                val src = args[0] as? android.graphics.Bitmap ?: return@function null
-                val tpl = args[1] as? android.graphics.Bitmap ?: return@function null
-                @Suppress("UNCHECKED_CAST")
-                val opts = args.getOrNull(2) as? Map<String, Any?> ?: emptyMap()
-                val region = (opts["region"] as? List<Int>)?.toIntArray()
+                val src = bitmapOf(args.getOrNull(0)) ?: return@function null
+                val tpl = bitmapOf(args.getOrNull(1)) ?: return@function null
+                val opts = mapOf(args.getOrNull(2))
+                val region = intListOf(opts["region"])
                 val threshold = (opts["threshold"] as? Number)?.toDouble() ?: 0.8
                 matcher.findImage(src, tpl, region, threshold)
             }
             function("findColor") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function null
-                val color = (args[1] as? Number)?.toInt() ?: return@function null
-                @Suppress("UNCHECKED_CAST")
-                val opts = args.getOrNull(2) as? Map<String, Any?> ?: emptyMap()
-                val region = (opts["region"] as? List<Int>)?.toIntArray()
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function null
+                val color = (args.getOrNull(1) as? Number)?.toInt() ?: return@function null
+                val opts = mapOf(args.getOrNull(2))
+                val region = intListOf(opts["region"])
                 val threshold = (opts["threshold"] as? Number)?.toInt() ?: 4
                 colorFinder.findColor(bmp, color, region, threshold)
             }
             function("findMultiColors") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function null
-                val firstColor = (args[1] as? Number)?.toInt() ?: return@function null
-                @Suppress("UNCHECKED_CAST")
-                val offsets = (args[2] as? List<List<Int>>)?.map { it.toIntArray() } ?: emptyList()
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function null
+                val firstColor = (args.getOrNull(1) as? Number)?.toInt() ?: return@function null
+                val offsets = (Context.jsToJava(args.getOrNull(2), List::class.java) as? List<*>)
+                    ?.mapNotNull { intListOf(it) } ?: emptyList()
                 colorFinder.findMultiColors(bmp, firstColor, offsets)
             }
             function("detectsColor") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function false
-                val x = (args[1] as? Number)?.toInt() ?: 0
-                val y = (args[2] as? Number)?.toInt() ?: 0
-                val color = (args[3] as? Number)?.toInt() ?: 0
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function false
+                val x = (args.getOrNull(1) as? Number)?.toInt() ?: 0
+                val y = (args.getOrNull(2) as? Number)?.toInt() ?: 0
+                val color = (args.getOrNull(3) as? Number)?.toInt() ?: 0
                 colorFinder.detectsColor(bmp, x, y, color)
             }
             function("crop") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function null
-                @Suppress("UNCHECKED_CAST")
-                val region = (args[1] as? List<Int>)?.toIntArray() ?: return@function null
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function null
+                val region = intListOf(args.getOrNull(1)) ?: return@function null
                 ImageMatcher.crop(bmp, region)
             }
             function("resize") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function null
-                val w = (args[1] as? Number)?.toInt() ?: 0
-                val h = (args[2] as? Number)?.toInt() ?: 0
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function null
+                val w = (args.getOrNull(1) as? Number)?.toInt() ?: 0
+                val h = (args.getOrNull(2) as? Number)?.toInt() ?: 0
                 ImageMatcher.resize(bmp, w, h)
             }
             function("pixel") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function 0
-                val x = (args[1] as? Number)?.toInt() ?: 0
-                val y = (args[2] as? Number)?.toInt() ?: 0
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function 0
+                val x = (args.getOrNull(1) as? Number)?.toInt() ?: 0
+                val y = (args.getOrNull(2) as? Number)?.toInt() ?: 0
                 ImageMatcher.pixel(bmp, x, y)
             }
             function("read") { args ->
-                val path = args[0]?.toString() ?: return@function null
+                val path = args.getOrNull(0)?.toString() ?: return@function null
                 try { android.graphics.BitmapFactory.decodeFile(path) } catch (e: Exception) { null }
             }
             function("save") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function false
-                val path = args[1]?.toString() ?: return@function false
+                val bmp = bitmapOf(args.getOrNull(0)) ?: return@function false
+                val path = args.getOrNull(1)?.toString() ?: return@function false
                 try {
-                    bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, java.io.FileOutputStream(path)); true
+                    java.io.FileOutputStream(path).use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                    true
                 } catch (e: Exception) { false }
             }
             property("captureManager", captureManager)
         }
     }
+
+    private fun bitmapOf(v: Any?): Bitmap? = Context.jsToJava(v, Bitmap::class.java) as? Bitmap
+
+    @Suppress("UNCHECKED_CAST")
+    private fun mapOf(v: Any?): Map<String, Any?> =
+        (Context.jsToJava(v, Map::class.java) as? Map<String, Any?>) ?: emptyMap()
+
+    private fun intListOf(v: Any?): IntArray? =
+        (Context.jsToJava(v, List::class.java) as? List<*>)?.mapNotNull { (it as? Number)?.toInt() }?.toIntArray()
 }
 
 /**
@@ -94,7 +105,8 @@ class OcrApiProvider : ApiProvider {
     override fun install(scope: ScriptScope) {
         scope.defineObject("ocr") {
             function("recognize") { args ->
-                val bmp = args[0] as? android.graphics.Bitmap ?: return@function emptyList<Any>()
+                val bmp = Context.jsToJava(args.getOrNull(0), Bitmap::class.java) as? Bitmap
+                    ?: return@function emptyList<Any>()
                 kotlinx.coroutines.runBlocking { engine.recognize(bmp) }
             }
             function("close") { _ -> engine.close() }

@@ -252,6 +252,36 @@ object TutorialData {
             "extra_modules_demo.js"
         ),
         TutorialTopic(
+            "系统能力", "传感器与电源", "sensors.* / power_manager.*",
+            "sensors：传感器读取与监听\n" +
+                "  sensors.has(sensors.ACCELEROMETER)  是否支持\n" +
+                "  sensors.getSensorList()  全部/按类型\n" +
+                "  sensors.on(sensors.GYROSCOPE, (t,v,ts)=>log(v[0],v[1],v[2]))  事件回调\n" +
+                "  sensors.acceleration() / gravity() / light() / proximity()  最近读数 {x,y,z}\n\n" +
+                "power_manager：电源与电量\n" +
+                "  power_manager.batteryLevel() / isCharging() / plugType()\n" +
+                "  power_manager.isScreenOn() / wakeUp() / sleep(需root)\n" +
+                "  power_manager.batteryInfo()  汇总对象\n" +
+                "  power_manager.keepAwake(true)  保持 CPU 唤醒",
+            "sensors_power_demo.js"
+        ),
+        TutorialTopic(
+            "系统能力", "2D 画布", "canvas.* / Paint / Path",
+            "canvas：2D 绘图（对齐 AutoJS Pro 一代 canvas 模块）\n" +
+                "  canvas.create(w, h)  位图画布\n" +
+                "  canvas.fromBitmap(bmp)  在已有图片上绘制\n" +
+                "  c.drawColor / drawRect / drawCircle / drawLine / drawText / drawPath ...\n" +
+                "  c.translate / scale / rotate / save / restore / clipRect\n" +
+                "  c.getBitmap()  取出结果，可接 images.save\n\n" +
+                "Paint / Path：全局构造器（对齐 Pro 的 new Paint() 写法）\n" +
+                "  paint.setColor / setStyle(Paint.Style.FILL) / setStrokeWidth / setTextSize\n" +
+                "  path.moveTo / lineTo / quadTo / cubicTo / close\n\n" +
+                "ui / floaty 的 <canvas> 控件：\n" +
+                "  ui.board.on(\"draw\", function(c){ ... })  绘制回调\n" +
+                "  ui.board.invalidate()  请求重绘",
+            "canvas_demo.js"
+        ),
+        TutorialTopic(
             "系统能力", "消息通知", "notifications.*",
             "读取/监听系统通知（需通知使用权）：\n\n" +
                 "notifications.on(\"post\", n => log(n.title))\n" +
