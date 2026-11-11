@@ -15,14 +15,14 @@
 | 项 | 选型 |
 |---|---|
 | 语言 | Kotlin + Java |
-| minSdk / targetSdk | API 24 (Android 7.0) / 35 |
+| minSdk / targetSdk | API 24 (Android 7.0) / 37 |
 | JS 引擎 | Rhino 1.7.15 (解释模式, optimizationLevel=-1) |
 | 网络 | OkHttp 4.x |
 | 图像 | OpenCV 4.x + 自研颜色扫描 |
 | OCR | ML Kit Text Recognition v2 (中文) |
 | 存储 | MMKV + Room |
 | UI | Material Components 3 |
-| 构建 | Gradle 8.10 + AGP 8.6 |
+| 构建 | Gradle 9.9.1 + AGP 9.5.0 (内置 Kotlin 2.4) |
 
 ## 工程结构
 

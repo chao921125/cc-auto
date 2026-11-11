@@ -48,6 +48,13 @@ class EngineManager(private val context: Context) {
             register(org.autojs.core.runtime.api.EventsApiProvider())
             register(org.autojs.core.runtime.api.DialogsApiProvider())
             register(org.autojs.core.runtime.api.UiApiProvider())
+            register(org.autojs.toolkit.ml.MlApiProvider())
+            register(org.autojs.toolkit.notification.NotificationApiProvider())
+            register(org.autojs.toolkit.shizuku.ShizukuApiProvider())
+            register(org.autojs.core.runtime.api.ColorsApiProvider())
+            register(org.autojs.core.runtime.api.KeysApiProvider())
+            register(org.autojs.core.runtime.api.MediaApiProvider())
+            register(org.autojs.core.runtime.api.SettingsScriptApiProvider())
         }
     }
 

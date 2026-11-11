@@ -1,17 +1,16 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "org.autojs.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "org.autojs.app"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0.0"
     }
@@ -39,7 +38,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
 }
 
 dependencies {
@@ -78,4 +76,10 @@ dependencies {
     implementation(Deps.SORA_EDITOR)
 
     debugImplementation(Deps.LEAKCANARY)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
 }

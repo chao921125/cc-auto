@@ -227,6 +227,54 @@ getClipBoard()         // 别名 getClipboard（Android 10+ 限前台读取）
 
 ---
 
+## colors — 颜色运算
+
+```javascript
+colors.parse("#FF8000")        // → ARGB 整型
+colors.rgb(255, 128, 0)        // 亦提供 rgba(r,g,b,a)
+colors.red(c) / green / blue / alpha
+colors.hex(c)                  // "#FF8000"
+colors.mix(c1, c2[, ratio])    // 通道线性混合
+colors.darker(c) / lighter(c)
+colors.isSimilar(c1, c2[, threshold])
+```
+
+---
+
+## keys — 按键模拟
+
+```javascript
+keys.press("volume_up")   // 音量类按键走 AudioManager，免 root
+keys.press("back")        // 其他按键：root 经 su input；非 root 无法注入（返回 false）
+keys.longPress(key) / keys.down(key) / keys.up(key)
+```
+
+> 键名同 events 按键（back/home/volume_up/enter/dpad_* 或数字 keyCode）。
+
+---
+
+## media — 音频播放
+
+```javascript
+media.playMusic("/sdcard/a.mp3"[, loop])   // 文件不存在/解码失败返回 false
+media.pauseMusic() / media.resumeMusic() / media.stopMusic()
+media.isMusicPlaying()
+media.setMusicVolume(0.5)                  // 0.0–1.0
+```
+
+---
+
+## settings — 系统设置
+
+```javascript
+settings.get("screen_brightness")          // 先 System 后 Secure
+settings.getFloat(key)
+settings.set("screen_brightness", 100)     // 需 WRITE_SETTINGS，未授权返回 false
+settings.canWrite() / settings.requestWritePermission()
+```
+
+---
+
 ## threads — 多线程
 
 ```javascript

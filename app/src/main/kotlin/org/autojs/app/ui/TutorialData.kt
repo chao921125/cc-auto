@@ -239,6 +239,19 @@ object TutorialData {
             "shizuku_demo.js"
         ),
         TutorialTopic(
+            "系统能力", "补充模块", "colors / keys / media / settings",
+            "colors：颜色运算\n" +
+                "  colors.parse(\"#FF8000\") / hex / rgb / mix / darker / isSimilar\n\n" +
+                "keys：按键模拟\n" +
+                "  keys.press(\"volume_up\")  音量键免 root（AudioManager）\n" +
+                "  其他按键需 root（su input keyevent），非 root 返回 false\n\n" +
+                "media：音频播放\n" +
+                "  media.playMusic(path[, loop]) / pause / resume / stop / setMusicVolume\n\n" +
+                "settings：系统设置\n" +
+                "  settings.get(key) / set(key, value)（写需 WRITE_SETTINGS 授权）",
+            "extra_modules_demo.js"
+        ),
+        TutorialTopic(
             "系统能力", "消息通知", "notifications.*",
             "读取/监听系统通知（需通知使用权）：\n\n" +
                 "notifications.on(\"post\", n => log(n.title))\n" +

@@ -98,32 +98,7 @@ class EventsApiProvider : ApiProvider {
         } catch (e: Exception) { false }
     }
 
-    /** 键名或数字 → keyCode。 */
-    private fun keyCode(v: Any?): Int? = when (v) {
-        is Number -> v.toInt()
-        is String -> when (v.lowercase()) {
-            "back" -> android.view.KeyEvent.KEYCODE_BACK
-            "home" -> android.view.KeyEvent.KEYCODE_HOME
-            "menu" -> android.view.KeyEvent.KEYCODE_MENU
-            "power" -> android.view.KeyEvent.KEYCODE_POWER
-            "volume_up", "volup", "volumeup" -> android.view.KeyEvent.KEYCODE_VOLUME_UP
-            "volume_down", "voldown", "volumedown" -> android.view.KeyEvent.KEYCODE_VOLUME_DOWN
-            "volume_mute" -> android.view.KeyEvent.KEYCODE_VOLUME_MUTE
-            "enter" -> android.view.KeyEvent.KEYCODE_ENTER
-            "del", "delete" -> android.view.KeyEvent.KEYCODE_DEL
-            "space" -> android.view.KeyEvent.KEYCODE_SPACE
-            "tab" -> android.view.KeyEvent.KEYCODE_TAB
-            "camera" -> android.view.KeyEvent.KEYCODE_CAMERA
-            "app_switch" -> android.view.KeyEvent.KEYCODE_APP_SWITCH
-            "dpad_up" -> android.view.KeyEvent.KEYCODE_DPAD_UP
-            "dpad_down" -> android.view.KeyEvent.KEYCODE_DPAD_DOWN
-            "dpad_left" -> android.view.KeyEvent.KEYCODE_DPAD_LEFT
-            "dpad_right" -> android.view.KeyEvent.KEYCODE_DPAD_RIGHT
-            "dpad_center" -> android.view.KeyEvent.KEYCODE_DPAD_CENTER
-            else -> v.toIntOrNull()
-        }
-        else -> null
-    }
+    private fun keyCode(v: Any?): Int? = org.autojs.core.runtime.KeyCodes.of(v)
 
     /** 通用事件发射器，暴露给 JS 调用 on/once/off/emit。 */
     class Emitter(private var scope: Scriptable?) {
